@@ -58,7 +58,6 @@ module.exports = (_options = {}) => {
       let corePath, createFFmpegCore, workerPath, wasmPath = null
       // Adding caching
       if (cachedCoreBlob && cachedWasmBlob && cachedWorkerBlob) {
-        console.log("Using cache")
         corePath = cachedCoreBlob
         workerPath = cachedWorkerBlob
         wasmPath = cachedWasmBlob
@@ -74,7 +73,6 @@ module.exports = (_options = {}) => {
           workerPath,
           wasmPath,
         } = await getCreateFFmpegCore(options));
-        console.log("Cached Blobs")
         cachedCoreBlob = corePath
         cachedWasmBlob = wasmPath
         cachedWorkerBlob = workerPath
