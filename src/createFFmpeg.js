@@ -25,6 +25,7 @@ module.exports = (_options = {}) => {
   let cachedCoreBlob = null
   let cachedWorkerBlob = null
   let cachedWasmBlob = null
+  let cachedCreateFfmpegCore = null
   let progress = optProgress;
   const detectCompletion = (message) => {
     if (message === 'FFMPEG_END' && runResolve !== null) {
@@ -57,11 +58,11 @@ module.exports = (_options = {}) => {
       let corePath, createFFmpegCore, workerPath, wasmPath = null
       // Adding caching
       if (cachedCoreBlob && cachedWasmBlob && cachedWorkerBlob) {
-        console.log("Everything is cached, setting core, worker, wasm to the following")
-        console.log(cachedCoreBlob, cachedWorkerBlob, cachedWasmBlob)
+        console.log("Using cache")
         corePath = cachedCoreBlob
         workerPath = cachedWorkerBlob
         wasmPath = cachedWasmBlob
+        createFFmpegCore = cachedCreateFfmpegCore
       } else {
         /*
         * In node environment, all paths are undefined as there
@@ -73,11 +74,11 @@ module.exports = (_options = {}) => {
           workerPath,
           wasmPath,
         } = await getCreateFFmpegCore(options));
-        console.log("Core path, worker path, wasm path, saving them (key thing to look for is are they blobs?)")
-        console.log(corePath, workerPath, wasmPath)
+        console.log("Cached Blobs")
         cachedCoreBlob = corePath
         cachedWasmBlob = wasmPath
         cachedWorkerBlob = workerPath
+        cachedCreateFfmpegCore = createFFmpegCore
       }
       Core = await createFFmpegCore({
         /*
