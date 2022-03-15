@@ -2,7 +2,7 @@ const { defaultArgs, baseOptions } = require('./config');
 const { setLogging, setCustomLogger, log } = require('./utils/log');
 const parseProgress = require('./utils/parseProgress');
 const parseArgs = require('./utils/parseArgs');
-const { defaultOptions, getCreateFFmpegCore } = require('./node');
+const { defaultOptions, getCreateFFmpegCore } = require('./browser');
 const { version } = require('../package.json');
 
 const NO_LOAD = Error('ffmpeg.wasm is not ready, make sure you have completed load().');
@@ -22,6 +22,9 @@ module.exports = (_options = {}) => {
   let ffmpeg = null;
   let runResolve = null;
   let running = false;
+  let cachedCoreBlob = null
+  let cachedWorkerBlob = null
+  let cachedWasmBlob = null
   let progress = optProgress;
   const detectCompletion = (message) => {
     if (message === 'FFMPEG_END' && runResolve !== null) {
@@ -51,16 +54,31 @@ module.exports = (_options = {}) => {
     log('info', 'load ffmpeg-core');
     if (Core === null) {
       log('info', 'loading ffmpeg-core');
-      /*
-       * In node environment, all paths are undefined as there
-       * is no need to set them.
-       */
-      const {
-        createFFmpegCore,
-        corePath,
-        workerPath,
-        wasmPath,
-      } = await getCreateFFmpegCore(options);
+      let corePath, createFFmpegCore, workerPath, wasmPath = null
+      // Adding caching
+      if (cachedCoreBlob && cachedWasmBlob && cachedWorkerBlob) {
+        console.log("Everything is cached, setting core, worker, wasm to the following")
+        console.log(cachedCoreBlob, cachedWorkerBlob, cachedWasmBlob)
+        corePath = cachedCoreBlob
+        workerPath = cachedWorkerBlob
+        wasmPath = cachedWasmBlob
+      } else {
+        /*
+        * In node environment, all paths are undefined as there
+        * is no need to set them.
+        */
+        ({
+          createFFmpegCore,
+          corePath,
+          workerPath,
+          wasmPath,
+        } = await getCreateFFmpegCore(options));
+        console.log("Core path, worker path, wasm path, saving them (key thing to look for is are they blobs?)")
+        console.log(corePath, workerPath, wasmPath)
+        cachedCoreBlob = corePath
+        cachedWasmBlob = wasmPath
+        cachedWorkerBlob = workerPath
+      }
       Core = await createFFmpegCore({
         /*
          * Assign mainScriptUrlOrBlob fixes chrome extension web worker issue
