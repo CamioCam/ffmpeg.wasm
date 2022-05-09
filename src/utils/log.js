@@ -11,9 +11,10 @@ const setCustomLogger = (logger) => {
 
 const log = (type, message) => {
   customLogger({ type, message });
-  if (logging) {
-    console.log(`[${type}] ${message}`);
-  }
+  // Make it so all logging is handled by the callback above
+  // if (logging) {
+  //   console.log(`[${type}] ${message}`);
+  // }
 };
 
 module.exports = {
